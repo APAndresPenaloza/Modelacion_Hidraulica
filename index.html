@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador Hidráulico 3D Avanzado - Santa Marta</title>
+    <title>Simulador Hidráulico 3D - Gestión Hídrica Magdalena</title>
     
     <!-- Three.js y OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <style>
-        :root { --primary: #022b3a; --secondary: #1f7a8c; --accent: #bfdbf7; --bg: #e1e5f2; }
-        body { font-family: 'Times New Roman', Times, serif; margin: 0; padding: 15px; background: var(--bg); color: #333; overflow-x: hidden; }
+        :root { --primary: #002b36; --secondary: #0077b6; --accent: #90e0ef; --bg: #e9ecef; }
+        body { font-family: 'Times New Roman', Times, serif; margin: 0; padding: 15px; background: var(--bg); color: #333; }
         header { background: var(--primary); color: white; padding: 15px; border-radius: 6px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); margin-bottom: 15px; }
         .container { display: flex; flex-wrap: wrap; gap: 15px; }
-        .panel-3d { flex: 2.5; min-width: 60%; background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        #canvas3d { width: 100%; height: 600px; border-radius: 4px; overflow: hidden; background: #87CEEB; }
-        .panel-controls { flex: 1; min-width: 320px; background: #fff; padding: 20px; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-height: 600px; overflow-y: auto; }
+        .panel-3d { flex: 2; min-width: 60%; background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #canvas3d { width: 100%; height: 600px; border-radius: 4px; overflow: hidden; background: linear-gradient(to bottom, #a1c4fd 0%, #c2e9fb 100%); }
+        .panel-controls { flex: 1; min-width: 350px; background: #fff; padding: 20px; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-height: 600px; overflow-y: auto; }
         .control-group { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #ddd; }
         label { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; font-size: 0.9em; color: var(--primary); }
         input[type=range] { width: 100%; accent-color: var(--secondary); cursor: pointer; }
-        .math-box { background: var(--accent); border-left: 4px solid var(--secondary); padding: 10px; font-family: 'Courier New', Courier, monospace; font-size: 0.85em; margin-top: 10px; color: #000; }
-        .highlight { font-weight: bold; font-size: 1.1em; color: var(--primary); }
+        .math-box { background: #f0f8ff; border-left: 4px solid var(--secondary); padding: 10px; font-family: 'Courier New', Courier, monospace; font-size: 0.9em; margin-top: 10px; color: #000; }
+        .highlight { font-weight: bold; font-size: 1.1em; color: var(--secondary); }
     </style>
 </head>
 <body>
@@ -32,33 +32,36 @@
     </header>
 
     <div class="container">
+        <!-- Visor 3D -->
         <div class="panel-3d">
             <div id="canvas3d"></div>
         </div>
 
+        <!-- Panel de Control e Inputs Matemáticos -->
         <div class="panel-controls">
+            
             <div class="control-group">
                 <label>Nivel del Embalse en la Sierra (h): <span id="valEmbalse">15.00 m</span></label>
-                <input type="range" id="slideEmbalse" min="5" max="25" step="0.5" value="15">
+                <input type="range" id="slideEmbalse" min="2" max="20" step="0.5" value="15">
             </div>
 
             <div class="control-group">
                 <label>Ancho Canal Rectangular (Ecuación Cuadrática): <span id="valCanal">4.00 m</span></label>
-                <input type="range" id="slideCanal" min="1" max="10" step="0.1" value="4">
+                <input type="range" id="slideCanal" min="1" max="8" step="0.1" value="4">
                 <div class="math-box">
-                    Área Máxima: <span class="highlight" id="resArea">0.00</span> m²<br>
+                    Área Máxima A(x): <span class="highlight" id="resArea">0.00</span> m²<br>
                     Caudal (Manning): <span class="highlight" id="resManning">0.00</span> m³/s
                 </div>
             </div>
 
             <div class="control-group">
-                <label>Volumen de Bombeo Urbano (V): <span id="valVolumen">250.00 m³</span></label>
-                <input type="range" id="slideVolumen" min="10" max="500" step="10" value="250">
-                <label style="margin-top: 10px;">Diámetro Tubería Matriz (D): <span id="valDiametro">1.50 m</span></label>
-                <input type="range" id="slideDiametro" min="0.5" max="3.0" step="0.1" value="1.5">
+                <label>Volumen de Bombeo a la Ciudad (V): <span id="valVolumen">150.00 m³</span></label>
+                <input type="range" id="slideVolumen" min="10" max="500" step="10" value="150">
+                <label style="margin-top: 10px;">Diámetro Tubería Matriz (D): <span id="valDiametro">1.40 m</span></label>
+                <input type="range" id="slideDiametro" min="0.5" max="3.0" step="0.1" value="1.4">
                 <div class="math-box">
-                    Pérdida por Fricción (Lineal): <span class="highlight" id="resFriccion">0.00</span> m<br><hr>
-                    Costo Bombeo: <span class="highlight" id="resCosto">$0.00</span>
+                    Pérdida por Fricción (Lineal): <span class="highlight" id="resFriccion">0.00</span> m<br><hr style="border: 0.5px solid #ccc; margin: 8px 0;">
+                    Costo Bombeo C(V): <span class="highlight" id="resCosto">$0.00</span>
                 </div>
             </div>
         </div>
@@ -78,165 +81,157 @@
             return { area, caudal };
         }
 
-        function calcularCosto(volumen) { return (volumen * 250.00) + 1500.00; } // Lineal
+        function calcularCosto(volumen) { 
+            return (volumen * 250.00) + 1500.00; // Lineal
+        }
 
         // ==========================================
-        // 2. CONFIGURACIÓN GRÁFICA AVANZADA (Three.js)
+        // 2. CONFIGURACIÓN GRÁFICA (Three.js)
         // ==========================================
         const container = document.getElementById('canvas3d');
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0xe1e5f2, 0.012); // Niebla atmosférica
-
+        
         const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-        camera.position.set(-60, 40, 60);
+        camera.position.set(-50, 45, 60);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Sombras suaves
         container.appendChild(renderer.domElement);
 
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.target.set(0, 5, 0);
+        controls.target.set(0, 10, 0);
         controls.enableDamping = true;
-        controls.maxPolarAngle = Math.PI / 2.1;
+        controls.maxPolarAngle = Math.PI / 2.2; // Evitar ver por debajo de la tierra
 
-        // Iluminación realista
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-        scene.add(ambientLight);
-        
-        const sunLight = new THREE.DirectionalLight(0xffffff, 0.9);
-        sunLight.position.set(50, 80, 20);
+        // Iluminación
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        sunLight.position.set(20, 60, 30);
         sunLight.castShadow = true;
-        sunLight.shadow.mapSize.width = 2048;
-        sunLight.shadow.mapSize.height = 2048;
-        sunLight.shadow.camera.near = 0.5;
-        sunLight.shadow.camera.far = 150;
-        sunLight.shadow.camera.left = -50;
-        sunLight.shadow.camera.right = 50;
-        sunLight.shadow.camera.top = 50;
-        sunLight.shadow.camera.bottom = -50;
         scene.add(sunLight);
 
         // ==========================================
-        // 3. CONSTRUCCIÓN DEL ENTORNO (TOPOGRAFÍA)
+        // 3. CONSTRUCCIÓN DE LA MAQUETA 3D
         // ==========================================
-        // Terreno (Sierra y Ciudad)
-        const terrainGeo = new THREE.PlaneGeometry(120, 120, 64, 64);
-        terrainGeo.rotateX(-Math.PI / 2);
-        const pos = terrainGeo.attributes.position;
-        for (let i = 0; i < pos.count; i++) {
-            let vx = pos.getX(i);
-            let vz = pos.getZ(i);
-            // Función matemática para generar montañas suaves
-            let vy = Math.sin(vx * 0.05) * 5 + Math.cos(vz * 0.05) * 5;
-            if (vx < -20) vy += (Math.abs(vx) - 20) * 0.8; // Elevación Sierra Nevada
-            pos.setY(i, vy);
-        }
-        terrainGeo.computeVertexNormals();
         
-        const matTerreno = new THREE.MeshStandardMaterial({ 
-            color: 0x4a7c59, roughness: 0.9, metalness: 0.1, flatShading: true 
-        });
-        const terreno = new THREE.Mesh(terrainGeo, matTerreno);
-        terreno.receiveShadow = true;
-        scene.add(terreno);
+        // Materiales
+        const matTierra = new THREE.MeshStandardMaterial({ color: 0x6b8e23, roughness: 0.9 });
+        const matConcreto = new THREE.MeshStandardMaterial({ color: 0x95a5a6, roughness: 0.7 });
+        const matAgua = new THREE.MeshStandardMaterial({ color: 0x0077b6, transparent: true, opacity: 0.85, roughness: 0.1 });
+        const matCiudad = new THREE.MeshStandardMaterial({ color: 0xe0e0e0 });
 
-        // Material del Agua
-        const matAgua = new THREE.MeshStandardMaterial({
-            color: 0x0099cc, transparent: true, opacity: 0.8, roughness: 0.1, metalness: 0.8
-        });
+        // --- TOPOGRAFÍA ESCALONADA ---
+        // Nivel 1: Montaña (Embalse)
+        const nivelAlto = new THREE.Mesh(new THREE.BoxGeometry(20, 30, 20), matTierra);
+        nivelAlto.position.set(-30, 15, 0);
+        nivelAlto.castShadow = true;
+        nivelAlto.receiveShadow = true;
+        scene.add(nivelAlto);
 
-        // Embalse (Represa en la montaña)
-        const represaMat = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.7 });
-        const muroRepresa = new THREE.Mesh(new THREE.BoxGeometry(15, 20, 20), represaMat);
-        muroRepresa.position.set(-45, 10, 0);
-        muroRepresa.castShadow = true;
-        muroRepresa.receiveShadow = true;
-        scene.add(muroRepresa);
+        // Nivel 2: Piedemonte (Planta / Canal)
+        const nivelMedio = new THREE.Mesh(new THREE.BoxGeometry(20, 15, 20), matTierra);
+        nivelMedio.position.set(-10, 7.5, 0);
+        nivelMedio.receiveShadow = true;
+        scene.add(nivelMedio);
 
-        const embalseAgua = new THREE.Mesh(new THREE.BoxGeometry(20, 1, 18), matAgua);
-        embalseAgua.geometry.translate(0, 0.5, 0);
-        embalseAgua.position.set(-60, 15, 0);
+        // Nivel 3: Costa / Ciudad
+        const nivelBajo = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 40), matTierra);
+        nivelBajo.position.set(20, 1, 0);
+        nivelBajo.receiveShadow = true;
+        scene.add(nivelBajo);
+
+        // --- INFRAESTRUCTURA ---
+        
+        // Embalse (Tanque de almacenamiento)
+        const embalseGeo = new THREE.CylinderGeometry(8, 8, 20, 32);
+        embalseGeo.translate(0, 10, 0); // Ajustar pivote a la base
+        const embalseMuro = new THREE.Mesh(embalseGeo, new THREE.MeshStandardMaterial({color: 0xffffff, transparent: true, opacity: 0.3}));
+        embalseMuro.position.set(-30, 30, 0);
+        scene.add(embalseMuro);
+
+        // Agua del Embalse
+        const aguaTanqueGeo = new THREE.CylinderGeometry(7.8, 7.8, 1, 32);
+        aguaTanqueGeo.translate(0, 0.5, 0); // Escala desde abajo hacia arriba
+        const embalseAgua = new THREE.Mesh(aguaTanqueGeo, matAgua);
+        embalseAgua.position.set(-30, 30, 0);
         scene.add(embalseAgua);
 
-        // Canal de aducción
-        const canalAgua = new THREE.Mesh(new THREE.BoxGeometry(25, 0.5, 4), matAgua);
-        canalAgua.position.set(-25, 18, 0);
-        canalAgua.rotation.z = -0.15; // Pendiente
+        // Canal de Aducción Rectangular
+        const canalEstructura = new THREE.Mesh(new THREE.BoxGeometry(16, 2, 5), matConcreto);
+        canalEstructura.position.set(-15, 16, 0);
+        canalEstructura.rotation.z = -Math.PI / 8; // Inclinación
+        scene.add(canalEstructura);
+
+        const canalAgua = new THREE.Mesh(new THREE.BoxGeometry(16, 1.5, 3), matAgua);
+        canalAgua.position.set(-15, 16.2, 0);
+        canalAgua.rotation.z = -Math.PI / 8;
         scene.add(canalAgua);
 
-        // Planta de tratamiento / Bombeo
-        const matPlanta = new THREE.MeshStandardMaterial({ color: 0x3d5a80 });
-        const planta = new THREE.Mesh(new THREE.BoxGeometry(10, 8, 12), matPlanta);
-        planta.position.set(-10, 5, 0);
-        planta.castShadow = true;
-        scene.add(planta);
+        // Estación de Bombeo
+        const estacion = new THREE.Mesh(new THREE.BoxGeometry(6, 6, 8), matConcreto);
+        estacion.position.set(-5, 18, 0);
+        estacion.castShadow = true;
+        scene.add(estacion);
 
-        // Tubería Matriz
-        const matTuberia = new THREE.MeshStandardMaterial({ color: 0x293241, roughness: 0.4 });
-        const tuberia = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 30, 32), matTuberia);
-        tuberia.rotation.z = Math.PI / 2;
-        tuberia.position.set(10, 2, 0);
-        tuberia.castShadow = true;
+        // Tubería Matriz hacia la ciudad
+        const tuberia = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 25, 16), new THREE.MeshStandardMaterial({color: 0x2c3e50}));
+        tuberia.rotation.z = -1.2; // Ángulo de bajada
+        tuberia.position.set(7, 10, 0);
         scene.add(tuberia);
 
-        // Sistema de Partículas (Chorro de Agua Dinámico)
-        const particulasGeo = new THREE.BufferGeometry();
-        const particulasCount = 500;
-        const posParticulas = new Float32Array(particulasCount * 3);
-        const velParticulas = [];
-        
-        for(let i=0; i<particulasCount; i++) {
-            posParticulas[i*3] = 25; // X salida tubería
-            posParticulas[i*3+1] = 2; // Y altura
-            posParticulas[i*3+2] = (Math.random() - 0.5); // Z dispersión
-            velParticulas.push({
-                vx: Math.random() * 2 + 5, // Velocidad inicial X
-                vy: Math.random() * 2,     // Velocidad inicial Y
-                vz: (Math.random() - 0.5)
-            });
-        }
-        particulasGeo.setAttribute('position', new THREE.BufferAttribute(posParticulas, 3));
-        const particulasMat = new THREE.PointsMaterial({ color: 0xa8dadc, size: 0.4, transparent: true, opacity: 0.8 });
-        const chorro = new THREE.Points(particulasGeo, particulasMat);
-        scene.add(chorro);
-
-        // Ciudad (Cajas estilizadas)
-        const matEdificio = new THREE.MeshStandardMaterial({ color: 0xd3d3d3 });
-        for(let i=0; i<15; i++) {
-            let h = Math.random() * 15 + 5;
-            let edificio = new THREE.Mesh(new THREE.BoxGeometry(4, h, 4), matEdificio);
-            edificio.position.set(30 + Math.random()*20, h/2, (Math.random() - 0.5)*40);
+        // Edificios de la Ciudad (Santa Marta)
+        for(let i=0; i<8; i++) {
+            let alto = Math.random() * 6 + 4;
+            let edificio = new THREE.Mesh(new THREE.BoxGeometry(3, alto, 3), matCiudad);
+            edificio.position.set(15 + Math.random()*20, 2 + alto/2, (Math.random() - 0.5)*20);
             edificio.castShadow = true;
             edificio.receiveShadow = true;
             scene.add(edificio);
         }
 
+        // Sistema de Partículas (Chorro de agua llegando a la ciudad)
+        const particulasCount = 300;
+        const posParticulas = new Float32Array(particulasCount * 3);
+        const velParticulas = [];
+        
+        for(let i=0; i<particulasCount; i++) {
+            posParticulas[i*3] = 18; // Inicio X (Fin de la tubería)
+            posParticulas[i*3+1] = 6; // Inicio Y 
+            posParticulas[i*3+2] = (Math.random() - 0.5); // Inicio Z
+            velParticulas.push({
+                vx: Math.random() * 1.5 + 2, // Velocidad inicial X
+                vy: Math.random() * 2,       // Velocidad inicial Y
+                vz: (Math.random() - 0.5)
+            });
+        }
+        
+        const particulasGeo = new THREE.BufferGeometry();
+        particulasGeo.setAttribute('position', new THREE.BufferAttribute(posParticulas, 3));
+        const particulasMat = new THREE.PointsMaterial({ color: 0x90e0ef, size: 0.6 });
+        const chorro = new THREE.Points(particulasGeo, particulasMat);
+        scene.add(chorro);
+
         // ==========================================
-        // 4. LÓGICA DE ANIMACIÓN Y FÍSICA
+        // 4. BUCLE DE ANIMACIÓN (Física Real)
         // ==========================================
-        let velocidadChorroBase = 5;
+        let velDescarga = 2;
 
         function animate() {
             requestAnimationFrame(animate);
             
-            // Animación de textura del canal (ilusión de flujo)
-            canalAgua.position.x = -25 + (Math.sin(Date.now() * 0.005) * 0.1);
-
-            // FÍSICA DE PARTÍCULAS (Ecuación Cuadrática en Tiempo Real)
+            // FÍSICA: Movimiento parabólico de partículas (Ecuación Cuadrática Visual)
             const posiciones = chorro.geometry.attributes.position.array;
             for(let i=0; i<particulasCount; i++) {
-                // Ecuación de movimiento parabólico
-                posiciones[i*3] += velParticulas[i].vx * 0.05; // X = v0 * t
-                posiciones[i*3+1] += velParticulas[i].vy * 0.05; // Y
-                velParticulas[i].vy -= 9.81 * 0.005; // Gravedad afectando Y
+                posiciones[i*3] += velParticulas[i].vx * 0.05; 
+                posiciones[i*3+1] += velParticulas[i].vy * 0.05; 
+                velParticulas[i].vy -= 9.81 * 0.005; // Gravedad terrestre
 
-                // Resetear partícula si toca el suelo
-                if(posiciones[i*3+1] < 0) {
-                    posiciones[i*3] = 25; // Origen X
-                    posiciones[i*3+1] = 2; // Origen Y
-                    velParticulas[i].vx = velocidadChorroBase + Math.random();
+                // Si tocan el suelo (y=2), resetear al inicio del chorro
+                if(posiciones[i*3+1] < 2) {
+                    posiciones[i*3] = 18; 
+                    posiciones[i*3+1] = 6; 
+                    velParticulas[i].vx = velDescarga + Math.random();
                     velParticulas[i].vy = Math.random() * 2;
                 }
             }
@@ -248,7 +243,7 @@
         animate();
 
         // ==========================================
-        // 5. ENLACE INTERFAZ - MATEMÁTICAS - 3D
+        // 5. INTEGRACIÓN INTERFAZ - MATEMÁTICAS - 3D
         // ==========================================
         const inputs = {
             embalse: document.getElementById('slideEmbalse'),
@@ -258,40 +253,41 @@
         };
 
         function actualizarDatos() {
+            // Requisito 1: Uso estricto de decimales (parseFloat y toFixed)
             let h = parseFloat(inputs.embalse.value);
             let x = parseFloat(inputs.canal.value);
             let V = parseFloat(inputs.volumen.value);
             let D = parseFloat(inputs.diametro.value);
 
-            // Textos UI
+            // Actualizar Textos
             document.getElementById('valEmbalse').innerText = h.toFixed(2) + " m";
             document.getElementById('valCanal').innerText = x.toFixed(2) + " m";
             document.getElementById('valVolumen').innerText = V.toFixed(2) + " m³";
             document.getElementById('valDiametro').innerText = D.toFixed(2) + " m";
 
-            // Cálculos Cuadráticos y Lineales
+            // Requisito 3: Ecuación Cuadrática
             const datosCanal = calcularCanal(x);
             document.getElementById('resArea').innerText = datosCanal.area.toFixed(2);
             document.getElementById('resManning').innerText = datosCanal.caudal.toFixed(2);
+            
+            // Requisito 2: Ecuaciones Lineales
             document.getElementById('resCosto').innerText = "$" + calcularCosto(V).toFixed(2);
-
             let velTuberia = V / (Math.PI * Math.pow(D/2, 2) * 100);
-            document.getElementById('resFriccion').innerText = (0.8 * velTuberia).toFixed(2);
+            document.getElementById('resFriccion').innerText = (0.8 * velTuberia).toFixed(2); // hf = Kv
 
-            // Actualización Visual 3D
-            embalseAgua.scale.y = Math.max(h / 15, 0.1);
-            embalseAgua.position.y = 15 + (h / 4); 
+            // ACTUALIZACIÓN ESCALA 3D
+            embalseAgua.scale.y = Math.max(h, 0.1); // El tanque se llena o vacía correctamente
+            canalAgua.scale.z = Math.max(x / 4, 0.1); // El canal se ensancha según la matemática
+            tuberia.scale.set(D, 1, D); // La tubería cambia de grosor
 
-            canalAgua.scale.z = Math.max(x / 4, 0.1);
-            tuberia.scale.set(D, 1, D);
-
-            // Velocidad de salida afecta las partículas parabólicas
-            velocidadChorroBase = Math.max(datosCanal.caudal / 2, 2);
+            // Velocidad del chorro parabólico basada en el caudal
+            velDescarga = Math.max(datosCanal.caudal / 10, 1.5);
         }
 
         Object.values(inputs).forEach(inp => inp.addEventListener('input', actualizarDatos));
         actualizarDatos();
 
+        // Responsive Canvas
         window.addEventListener('resize', () => {
             camera.aspect = container.clientWidth / container.clientHeight;
             camera.updateProjectionMatrix();
