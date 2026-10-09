@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Hidráulico 3D - Santa Marta</title>
+    
+    <!-- Librería Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* CSS3 Responsive Layout */
+        :root {
+            --primary-color: #005f73;
+            --secondary-color: #0a9396;
+            --bg-color: #e9ecef;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif; /* Formato solicitado en el documento */
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            flex: 1;
+            min-width: 300px; /* Responsividad */
+        }
+
+        .slider-container {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--secondary-color);
+        }
+
+        .result {
+            font-size: 1.4em;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        canvas {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Simulador Interactivo - Gestión Hídrica en Santa Marta</h1>
+        <p>Análisis de Costos de Bombeo y Optimización de Canales</p>
+    </header>
+
+    <div class="dashboard">
+        <!-- Módulo 1: Ecuación Lineal (Costos de Bombeo) -->
+        <div class="panel">
+            <h3>Costo de Bombeo Mensual (Ecuación Lineal)</h3>
+            <p><strong>Función:</strong> Costo = Volumen × $250.50 + $1500.00</p>
+            <div class="slider-container">
+                <label for="volumenSlider">Volumen de agua impulsado (V): <span id="volumenVal">50.00</span> m³</label>
+                <input type="range" id="volumenSlider" min="0" max="500" step="0.5" value="50">
+            </div>
+            <p>Costo Total Proyectado: $<span id="costoTotal" class="result">14025.00</span></p>
+        </div>
+
+        <!-- Módulo 2: Ecuación Cuadrática (Diseño de Canal) -->
+        <div class="panel">
+            <h3>Optimización de Canal Rectangular (Ecuación Cuadrática)</h3>
+            <p><strong>Función:</strong> Área A(x) = x * (P - x) / 2</p>
+            <p><i>Asumiendo un perímetro mojado constante de P = 12.00 m</i></p>
+            <div class="slider-container">
+                <label for="anchoSlider">Ancho de la base (x): <span id="anchoVal">6.00</span> m</label>
+                <input type="range" id="anchoSlider" min="0" max="12" step="0.1" value="6">
+            </div>
+            <p>Área de Sección Transversal: <span id="areaTotal" class="result">18.00</span> m²</p>
+        </div>
+    </div>
+
+    <!-- Módulo 3: Visualización Gráfica (Chart.js) -->
+    <div class="dashboard">
+        <div class="panel" style="flex: 2;">
+            <h3>Proyección Gráfica Dinámica (Costo vs Volumen)</h3>
+            <canvas id="graficoCostos"></canvas>
+        </div>
+    </div>
+
+    <!-- Lógica del Simulador (JavaScript ES6+) -->
+    <script>
+        // 1. OPERACIONES CON DECIMALES (Constantes con precisión)
+        const TARIFA_KWH = 250.50; 
+        const CARGO_FIJO = 1500.00;
+        const PERIMETRO_MOJADO = 12.00;
+
+        // Elementos del DOM
+        const volSlider = document.getElementById('volumenSlider');
+        const volVal = document.getElementById('volumenVal');
+        const costoTotal = document.getElementById('costoTotal');
+
+        const anchoSlider = document.getElementById('anchoSlider');
+        const anchoVal = document.getElementById('anchoVal');
+        const areaTotal = document.getElementById('areaTotal');
+
+        // 2. FUNCIÓN LINEAL: Costo(V) = V * Tarifa + Cargo_Fijo
+        function calcularCostoBombeo(volumen) {
+            return (volumen * TARIFA_KWH) + CARGO_FIJO;
+        }
+
+        // 3. FUNCIÓN CUADRÁTICA: Área(x) = x * (P - x) / 2
+        // Optimización del área de un canal dado un perímetro mojado (P = x + 2y)
+        function calcularAreaCanal(x) {
+            return (x * (PERIMETRO_MOJADO - x)) / 2.0;
+        }
+
+        // 4. LIBRERÍA GRÁFICA (Chart.js)
+        const ctx = document.getElementById('graficoCostos').getContext('2d');
+        let chartCostos = new Chart(ctx, {
+            type: 'line',
+            data: {
+                // Eje X inicial
+                labels: [0, 100, 200, 300, 400, 500],
+                datasets: [{
+                    label: 'Costo de Bombeo en el Magdalena ($)',
+                    data: [1500, 26550, 51600, 76650, 101700, 126750], // Calculados con la función lineal
+                    borderColor: '#0a9396',
+                    backgroundColor: 'rgba(10, 147, 150, 0.2)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Volumen impulsado (m³)' } },
+                    y: { title: { display: true, text: 'Costo Estimado ($)' } }
+                }
+            }
+        });
+
+        // 5. CONTROLES INTERACTIVOS (Tiempo Real)
+        
+        // Evento para el control de Costos de Bombeo
+        volSlider.addEventListener('input', (e) => {
+            const volumen = parseFloat(e.target.value);
+            volVal.textContent = volumen.toFixed(2); // Uso explícito de decimales
+            
+            const costo = calcularCostoBombeo(volumen);
+            costoTotal.textContent = costo.toFixed(2);
+        });
+
+        // Evento para el control de Optimización de Canales
+        anchoSlider.addEventListener('input', (e) => {
+            const ancho = parseFloat(e.target.value);
+            anchoVal.textContent = ancho.toFixed(2); // Uso explícito de decimales
+            
+            const area = calcularAreaCanal(ancho);
+            areaTotal.textContent = area.toFixed(2);
+        });
+    </script>
+</body>
+</html>
