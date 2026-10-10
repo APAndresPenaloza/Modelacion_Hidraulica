@@ -3,291 +3,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador Hidráulico 3D - Santa Marta y Magdalena</title>
-    
-    <!-- Three.js y Controles -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-
+    <title>Simulador Hidráulico 3D/2D - Abastecimiento Arroyos Santa Marta</title>
     <style>
-        :root { --bg-panel: #12181f; --text-main: #f5f5f5; --accent: #00a8cc; --border: #2a343d; }
-        body { font-family: 'Times New Roman', Times, serif; margin: 0; padding: 0; background: #0b0f13; color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
-        
-        .viewport-3d { flex: 1; position: relative; }
-        #canvas-container { width: 100%; height: 100%; }
-        
-        .ui-panel { width: 400px; background: var(--bg-panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10; box-shadow: -5px 0 20px rgba(0,0,0,0.6); }
-        .header { background: #080b0e; padding: 15px 20px; border-bottom: 1px solid var(--border); }
-        .header h1 { margin: 0; font-size: 1.1em; color: var(--accent); }
-        .header p { margin: 5px 0 0 0; font-size: 0.75em; color: #888; }
-        
-        .controls { padding: 20px; overflow-y: auto; flex: 1; }
-        .control-block { margin-bottom: 20px; background: #1a222c; padding: 15px; border-radius: 6px; border: 1px solid #2e3b4a; }
-        .control-block h3 { margin: 0 0 12px 0; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; color: #a0aec0; border-bottom: 1px solid #2e3b4a; padding-bottom: 5px; }
-        
-        label { display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 6px; font-weight: bold; }
-        input[type=range] { width: 100%; margin-bottom: 12px; accent-color: var(--accent); cursor: pointer; }
-        
-        .math-output { background: #0b0f13; padding: 10px; border-radius: 4px; font-family: 'Courier New', Courier, monospace; font-size: 0.8em; color: #00ffcc; border: 1px solid #222; }
-        .math-output span { color: #fff; }
-        
-        .overlay-title { position: absolute; top: 20px; left: 20px; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
-        .overlay-title h2 { margin: 0; font-size: 1.3em; color: #fff; }
-        .overlay-title p { margin: 4px 0 0 0; font-size: 0.85em; color: var(--accent); }
+        :root {
+            --primary: #0284c7;
+            --secondary: #0369a1;
+            --accent: #38bdf8;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        header h1 {
+            color: var(--accent);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--accent);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 5px;
+        }
+        /* Visualizador de los 3 Tramos */
+        .stage-viewer {
+            position: relative;
+            height: 220px;
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+        .stage-box {
+            text-align: center;
+            z-index: 2;
+            width: 28%;
+            background: rgba(15, 23, 42, 0.7);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #475569;
+        }
+        .stage-box h3 {
+            font-size: 0.85rem;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+        .stage-box p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .pipe-connector {
+            position: absolute;
+            top: 50%;
+            left: 20%;
+            right: 20%;
+            height: 16px;
+            background: #64748b;
+            transform: translateY(-50%);
+            z-index: 1;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .water-flow {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #38bdf8, #0284c7, #38bdf8);
+            background-size: 200% 100%;
+            animation: flowAnimation 1.5s linear infinite;
+        }
+        @keyframes flowAnimation {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
+        /* Controles / Sliders */
+        .control-group {
+            margin-bottom: 15px;
+        }
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        .control-group label span {
+            color: var(--accent);
+            font-weight: bold;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+        /* Dashboard de Métricas */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .metric-card {
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+        }
+        .metric-card.quadratic {
+            border-left-color: #10b981;
+        }
+        .metric-card.linear {
+            border-left-color: #f59e0b;
+        }
+        .metric-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-top: 4px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
     </style>
 </head>
 <body>
 
-    <div class="viewport-3d">
-        <div class="overlay-title">
-            <h2>Simulador Interactivo 3D - Gestión Hídrica Magdalena</h2>
-            <p>Modelo con Estructura de Acople (Canal-Cámara de Carga-Tubería)</p>
-        </div>
-        <div id="canvas-container"></div>
-    </div>
+    <header>
+        <h1>Simulador Interactivo 3D: Abastecimiento y Arroyos</h1>
+        <p>Caso de Estudio: Santa Marta y el Magdalena | Ingeniería del Agua y Desarrollo Sostenible[cite: 1, 2]</p>
+    </header>
 
-    <div class="ui-panel">
-        <div class="header">
-            <h1>Panel de Control de Variables</h1>
-            <p>Fase 2 & 3: Requisitos Matemáticos Obligatorios</p>
-        </div>
-        
-        <div class="controls">
-            <!-- Bloque 1: Embalse -->
-            <div class="control-block">
-                <h3>1. Captación (Embalse Sierra)</h3>
-                <label>Nivel del Embalse (h): <span id="valEmbalse">20.00 m</span></label>
-                <input type="range" id="slideEmbalse" min="5" max="35" step="0.5" value="20">
-            </div>
-
-            <!-- Bloque 2: Cuadrática / Canal -->
-            <div class="control-block">
-                <h3>2. Canal de Aducción (Ecuación Cuadrática)</h3>
-                <label>Ancho del Canal (x): <span id="valCanal">4.00 m</span></label>
-                <input type="range" id="slideCanal" min="1" max="8" step="0.1" value="4">
-                <div class="math-output">
-                    A(x) = x * (12 - x) / 2<br>
-                    Área Máxima: <span id="resArea">0.00</span> m²<br>
-                    Caudal (Manning): <span id="resManning">0.00</span> m³/s
+    <div class="container">
+        <!-- Panel Izquierdo: Visualizador y Controles -->
+        <div class="main-panel">
+            <div class="card">
+                <h2>Representación Esquemática del Sistema</h2>
+                <div class="stage-viewer">
+                    <div class="pipe-connector">
+                        <div class="water-flow" id="flowAnimationSpeed"></div>
+                    </div>
+                    <div class="stage-box">
+                        <h3>1. Captación</h3>
+                        <p>Río / Arroyo</p>
+                    </div>
+                    <div class="stage-box">
+                        <h3>2. Conducción</h3>
+                        <p>Red de Tubería</p>
+                    </div>
+                    <div class="stage-box">
+                        <h3>3. Entrega</h3>
+                        <p>Llave de Casa</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Bloque 3: Lineal / Tubería y Bombeo -->
-            <div class="control-block">
-                <h3>3. Sistema a Presión y Red (Lineal)</h3>
-                <label>Volumen Bombeado (V): <span id="valVolumen">200.00 m³</span></label>
-                <input type="range" id="slideVolumen" min="20" max="500" step="10" value="200">
+            <div class="card">
+                <h2>Controles Interactivos de Parámetros</h2>
                 
-                <label>Diámetro Tubería (D): <span id="valDiametro">1.20 m</span></label>
-                <input type="range" id="slideDiametro" min="0.4" max="2.5" step="0.1" value="1.2">
-                
-                <div class="math-output">
-                    Pérdida Fricción ($h_f = K \cdot v$): <span id="resFriccion">0.00</span> m<br>
-                    Costo $C(V) = V \cdot 250 + 1500$<br>
-                    Costo Total: $<span id="resCosto">0.00</span>
+                <div class="control-group">
+                    <label for="areaInput">Área del Canal de Captación ($A$): <span id="valArea">2.50</span> m²</label>
+                    <input type="range" id="areaInput" min="0.5" max="10.0" step="0.05" value="2.50">
+                </div>
+
+                <div class="control-group">
+                    <label for="velInput">Velocidad del Caudal ($v$): <span id="valVel">1.80</span> m/s</label>
+                    <input type="range" id="velInput" min="0.1" max="5.0" step="0.1" value="1.80">
+                </div>
+
+                <div class="control-group">
+                    <label for="diamInput">Diámetro de Tubería ($D$): <span id="valDiam">0.30</span> m</label>
+                    <input type="range" id="diamInput" min="0.05" max="1.0" step="0.01" value="0.30">
+                </div>
+
+                <div class="control-group">
+                    <label for="tarifaInput">Tarifa por m³ ($Tarifa$): <span id="valTarifa">250</span> COP</label>
+                    <input type="range" id="tarifaInput" min="100" max="800" step="10" value="250">
                 </div>
             </div>
         </div>
+
+        <!-- Panel Derecho: Dashboard de Métricas y Modelos Matemáticos -->
+        <div class="card">
+            <h2>Panel de Métricas en Tiempo Real</h2>
+            <div class="metrics-grid">
+                
+                <div class="metric-card">
+                    <div class="metric-title">Caudal Captado ($Q$)</div>
+                    <div class="metric-value" id="resQ">4.50 L/s</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title">Caudal Útil en Llave</div>
+                    <div class="metric-value" id="resQUtile">4.12 L/s</div>
+                </div>
+
+                <div class="metric-card linear">
+                    <div class="metric-title">Pérdida de Carga (Lineal)</div>
+                    <div class="metric-value" id="resPerdida">0.45 m</div>
+                </div>
+
+                <div class="metric-card linear">
+                    <div class="metric-title">Costo del Servicio</div>
+                    <div class="metric-value" id="resCosto">$ 12,450 COP</div>
+                </div>
+
+                <div class="metric-card quadratic" style="grid-column: span 2;">
+                    <div class="metric-title">Optimización Canal (Cuadrática: Área Máxima)</div>
+                    <div class="metric-value" id="resOptima" style="font-size: 0.95rem;">y = 1.25 m | Área Optimizada = 3.125 m²</div>
+                </div>
+
+            </div>
+        </div>
     </div>
+
+    <footer>
+        <p>Institución Universitaria de Santa Marta - Espacio Académico: Álgebra y Geometría Analítica (2026)[cite: 1, 2].</p>
+    </footer>
 
     <script>
-        // ==========================================
-        // 1. NÚCLEO MATEMÁTICO (Fase 1 y 2)
-        // ==========================================
-        function calcularCanal(x) {
-            const perimetro = 12.0; 
-            const n = 0.013; // Rugosidad Manning hormigón
-            const pendiente = 0.005; 
-            const area = (x * (perimetro - x)) / 2.0; // Ecuación cuadrática
-            let caudal = area > 0 ? (1/n) * area * Math.pow(area/perimetro, 2/3) * Math.sqrt(pendiente) : 0;
-            return { area, caudal };
-        }
+        // Referencias a los elementos del DOM
+        const areaInput = document.getElementById('areaInput');
+        const velInput = document.getElementById('velInput');
+        const diamInput = document.getElementById('diamInput');
+        const tarifaInput = document.getElementById('tarifaInput');
 
-        function calcularCostoBombeo(volumen) {
-            return (volumen * 250.00) + 1500.00; // Ecuación lineal de costos
-        }
+        const valArea = document.getElementById('valArea');
+        const valVel = document.getElementById('valVel');
+        const valDiam = document.getElementById('valDiam');
+        const valTarifa = document.getElementById('valTarifa');
 
-        // ==========================================
-        // 2. CONFIGURACIÓN DEL ENTORNO 3D (Three.js)
-        // ==========================================
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x1a2332);
-        scene.fog = new THREE.FogExp2(0x1a2332, 0.003);
-
-        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-        camera.position.set(-80, 50, 90);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.shadowMap.enabled = true;
-        container.appendChild(renderer.domElement);
-
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.target.set(0, 10, 0);
-        controls.enableDamping = true;
-        controls.maxPolarAngle = Math.PI / 2.05;
-
-        // Iluminación profesional de ingeniería
-        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-        const sun = new THREE.DirectionalLight(0xffffff, 0.9);
-        sun.position.set(40, 80, 40);
-        sun.castShadow = true;
-        scene.add(sun);
-
-        // ==========================================
-        // 3. CONSTRUCCIÓN DE LA MAQUETA ESTRUCTURAL
-        // ==========================================
-        const matConcreto = new THREE.MeshStandardMaterial({ color: 0x8c959d, roughness: 0.6 });
-        const matTierra = new THREE.MeshStandardMaterial({ color: 0x3d4e33, roughness: 0.9 });
-        const matAcero = new THREE.MeshStandardMaterial({ color: 0x2b3e50, metalness: 0.8, roughness: 0.2 });
-
-        // Textura animada realista para el agua en movimiento
-        const canvasTex = document.createElement('canvas');
-        canvasTex.width = 128; canvasTex.height = 128;
-        const ctx = canvasTex.getContext('2d');
-        ctx.fillStyle = '#0077b6'; ctx.fillRect(0,0,128,128);
-        ctx.fillStyle = '#00b4d8';
-        for(let i=0; i<30; i++) { ctx.fillRect(Math.random()*128, Math.random()*128, 15, 3); }
-        const texturaAgua = new THREE.CanvasTexture(canvasTex);
-        texturaAgua.wrapS = THREE.RepeatWrapping; texturaAgua.wrapT = THREE.RepeatWrapping;
-
-        const matAgua = new THREE.MeshStandardMaterial({ 
-            color: 0x00b4d8, transparent: true, opacity: 0.85, map: texturaAgua, roughness: 0.1 
-        });
-
-        // Topografía escalonada limpia (Sierra a Costa)
-        const sierra = new THREE.Mesh(new THREE.BoxGeometry(40, 35, 40), matTierra);
-        sierra.position.set(-45, 17.5, 0);
-        scene.add(sierra);
-
-        const piedemonte = new THREE.Mesh(new THREE.BoxGeometry(35, 18, 35), matTierra);
-        piedemonte.position.set(-10, 9, 0);
-        scene.add(piedemonte);
-
-        const costa = new THREE.Mesh(new THREE.BoxGeometry(60, 4, 60), matTierra);
-        costa.position.set(35, 2, 0);
-        scene.add(costa);
-
-        // --- COMPONENTES HIDRÁULICOS CONECTADOS ---
-
-        // 1. Embalse (Tanque de captación superior)
-        const embalseMuro = new THREE.Mesh(new THREE.CylinderGeometry(10, 10, 22, 32, 1, true), new THREE.MeshStandardMaterial({color: 0xffffff, transparent: true, opacity: 0.25, side: THREE.DoubleSide}));
-        embalseMuro.position.set(-45, 28, 0);
-        scene.add(embalseMuro);
-
-        const embalseAgua = new THREE.Mesh(new THREE.CylinderGeometry(9.8, 9.8, 1, 32), matAgua);
-        embalseAgua.geometry.translate(0, 0.5, 0);
-        embalseAgua.position.set(-45, 18, 0);
-        scene.add(embalseAgua);
-
-        // 2. Canal Rectangular de Aducción
-        const canal = new THREE.Mesh(new THREE.BoxGeometry(22, 1.5, 4), matConcreto);
-        canal.position.set(-27, 21, 0);
-        canal.rotation.z = -0.15; // Pendiente hidráulica
-        scene.add(canal);
-
-        const canalAgua = new THREE.Mesh(new THREE.BoxGeometry(22, 1.2, 3), matAgua);
-        canalAgua.position.set(-27, 21.3, 0);
-        canalAgua.rotation.z = -0.15;
-        scene.add(canalAgua);
-
-        // 3. NUEVO: Estructura de Acople / Cámara de Transición (Forebay / Caja de Empalme)
-        // Convierte el flujo abierto del canal en flujo a presión para la tubería
-        const camaraTransicion = new THREE.Mesh(new THREE.BoxGeometry(6, 7, 6), matConcreto);
-        camaraTransicion.position.set(-15, 18, 0);
-        scene.add(camaraTransicion);
-
-        const aguaCamara = new THREE.Mesh(new THREE.BoxGeometry(5.8, 4, 5.8), matAgua);
-        aguaCamara.position.set(-15, 17, 0);
-        scene.add(aguaCamara);
-
-        // 4. Tubería Matriz a Presión (Sale directamente acoplada desde la Cámara de Transición)
-        const tuberiaGeo = new THREE.CylinderGeometry(1, 1, 35, 24);
-        tuberiaGeo.translate(0, 17.5, 0);
-        const tuberia = new THREE.Mesh(tuberiaGeo, matAcero);
-        tuberia.rotation.z = -Math.PI / 2 - 0.12; // Acople con pendiente hacia la ciudad
-        tuberia.position.set(-12, 18, 0);
-        scene.add(tuberia);
-
-        // 5. Tanque de Distribución y Red Urbana (Santa Marta)
-        const tanqueCiudad = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 8, 32), matConcreto);
-        tanqueCiudad.position.set(22, 6, 0);
-        scene.add(tanqueCiudad);
-
-        // Edificaciones representativas de la ciudad
-        for(let i=0; i<10; i++) {
-            let h = Math.random() * 8 + 4;
-            let edificio = new THREE.Mesh(new THREE.BoxGeometry(3.5, h, 3.5), new THREE.MeshStandardMaterial({color: 0xcccccc}));
-            edificio.position.set(35 + (i % 3) * 5, 4 + h/2, (i > 4 ? 1 : -1) * 6);
-            scene.add(edificio);
-        }
-
-        // ==========================================
-        // 4. ANIMACIÓN DE FLUJO
-        // ==========================================
-        function animate() {
-            requestAnimationFrame(animate);
-            texturaAgua.offset.x -= 0.012; // Simula velocidad de corriente
-            controls.update();
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // ==========================================
-        // 5. INTERACTIVIDAD Y ACTUALIZACIÓN EN VIVO
-        // ==========================================
-        const inputs = {
-            embalse: document.getElementById('slideEmbalse'),
-            canal: document.getElementById('slideCanal'),
-            volumen: document.getElementById('slideVolumen'),
-            diametro: document.getElementById('slideDiametro')
-        };
+        const resQ = document.getElementById('resQ');
+        const resQUtile = document.getElementById('resQUtile');
+        const resPerdida = document.getElementById('resPerdida');
+        const resCosto = document.getElementById('resCosto');
+        const resOptima = document.getElementById('resOptima');
+        const flowAnimationSpeed = document.getElementById('flowAnimationSpeed');
 
         function actualizarSimulacion() {
-            let h = parseFloat(inputs.embalse.value);
-            let x = parseFloat(inputs.canal.value);
-            let V = parseFloat(inputs.volumen.value);
-            let D = parseFloat(inputs.diametro.value);
+            // 1. Operaciones con decimales exactos
+            const A = parseFloat(areaInput.value);
+            const v = parseFloat(velInput.value);
+            const D = parseFloat(diamInput.value);
+            const tarifa = parseFloat(tarifaInput.value);
 
-            // Reflejar en textos UI
-            document.getElementById('valEmbalse').innerText = h.toFixed(2) + " m";
-            document.getElementById('valCanal').innerText = x.toFixed(2) + " m";
-            document.getElementById('valVolumen').innerText = V.toFixed(2) + " m³";
-            document.getElementById('valDiametro').innerText = D.toFixed(2) + " m";
+            valArea.textContent = A.toFixed(2);
+            valVel.textContent = v.toFixed(2);
+            valDiam.textContent = D.toFixed(2);
+            valTarifa.textContent = tarifa.toFixed(0);
 
-            // Cálculos con objetos matemáticos obligatorios
-            const datosCanal = calcularCanal(x);
-            document.getElementById('resArea').innerText = datosCanal.area.toFixed(2);
-            document.getElementById('resManning').innerText = datosCanal.caudal.toFixed(2);
+            // Cálculo del Caudal inicial Q = A * v (m3/s) -> Convertido a Litros/segundo con decimales
+            let caudalM3s = A * v;
+            let caudalLs = caudalM3s * 1000;
 
-            let costo = calcularCostoBombeo(V);
-            document.getElementById('resCosto').innerText = costo.toFixed(2);
+            // 2. Ecuación Lineal para Pérdidas de Carga y Costo
+            // Pérdida de carga proporcional a la velocidad e inversamente al diámetro (h_f = k * v / D)
+            let perdidaCarga = (0.08 * v) / (D + 0.05);
+            
+            // Estimación de volumen diario simulado basado en el caudal (m3)
+            let volumenDiario = caudalM3s * 3600; // Simulación por hora escalada
+            
+            // Ecuación lineal de Costo: Costo = Volumen * Tarifa + Cargo_Fijo (1500)
+            let costoServicio = (volumenDiario * tarifa) + 1500;
 
-            let areaTuberia = Math.PI * Math.pow(D/2, 2);
-            let velocidadTuberia = V / (areaTuberia * 150);
-            let perdidaFriccion = 0.85 * velocidadTuberia;
-            document.getElementById('resFriccion').innerText = perdidaFriccion.toFixed(2);
+            // Caudal útil final en la llave considerando pérdidas por fricción
+            let caudalUtilLs = Math.max(0, caudalLs - (perdidaCarga * 150));
 
-            // Actualización Geométrica 3D Interactiva
-            embalseAgua.scale.y = Math.max(h / 15, 0.1);
-            embalseAgua.position.y = 18 + (h * 0.35);
+            // 3. Ecuación Cuadrática para Optimización de Sección Transversal de Canal Rectangular
+            // Supuesto: Perímetro mojado fijo P = 6.0 m. Relación b + 2y = 6 -> b = 6 - 2y
+            // Área A(y) = y * (6 - 2y) = 6y - 2y^2 (Ecuación cuadrática abierta hacia abajo)
+            // El vértice (máximo) se da en y = -b / (2a) -> -6 / (2 * -2) = 1.5 m
+            const P_mojado = 6.0;
+            let y_optimo = P_mojado / 4.0; // Altura óptima teórica para máxima eficiencia hidráulica
+            let area_optimizada = y_optimo * (P_mojado - 2 * y_optimo);
 
-            // El canal responde dinámicamente al ancho (x) configurado en la cuadrática
-            canalAgua.scale.z = Math.max(x / 4, 0.1);
+            // Actualización visual del Dashboard
+            resQ.textContent = `${caudalLs.toFixed(2)} L/s`;
+            resQUtile.textContent = `${caudalUtilLs.toFixed(2)} L/s`;
+            resPerdida.textContent = `${perdidaCarga.toFixed(3)} m`;
+            resCosto.textContent = `$ ${costoServicio.toLocaleString('es-CO', {maximumFractionDigits: 0})} COP`;
+            resOptima.textContent = `y = ${y_optimo.toFixed(2)} m | Área Máxima Optimizada = ${area_optimizada.toFixed(3)} m²`;
 
-            // La tubería de presión acoplada responde dinámicamente al diámetro (D)
-            tuberia.scale.set(D, 1, D);
+            // Dinámica visual del flujo web según la velocidad
+            let animDuration = Math.max(0.2, 2.0 - (v * 0.3));
+            flowAnimationSpeed.style.animationDuration = `${animDuration}s`;
         }
 
-        Object.values(inputs).forEach(inp => inp.addEventListener('input', actualizarSimulacion));
-        actualizarSimulacion();
+        // Eventos de escucha para los deslizadores
+        areaInput.addEventListener('input', actualizarSimulacion);
+        velInput.addEventListener('input', actualizarSimulacion);
+        diamInput.addEventListener('input', actualizarSimulacion);
+        tarifaInput.addEventListener('input', actualizarSimulacion);
 
-        window.addEventListener('resize', () => {
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        });
+        // Ejecución inicial al cargar
+        actualizarSimulacion();
     </script>
 </body>
 </html>
